@@ -301,62 +301,6 @@ body {
   font-family: "PT Serif", sans-serif;
 }
 
-/* osis 2024 */
-
-.osis {
-  background-image: url("../images/");
-
-  margin-left: 600px;
-}
-
-.osis .container {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-}
-
-.osis .container img {
-  width: 500px;
-  height: 600px;
-  border-radius: 50px;
-  -webkit-box-shadow: 2px 2px 20px 0 rgba(0, 0, 0, 0.2);
-  box-shadow: 2px 2px 20px 0 rgba(0, 0, 0, 0.2);
-}
-
-.osis .container .visiMisi {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: justify;
-  -ms-flex-pack: justify;
-  justify-content: space-between;
-}
-
-.osis .container .visiMisi .visi {
-  margin: 0 50px 0 100px;
-}
-
-.osis .container .visiMisi .visi h5 {
-  font-size: 1.2rem;
-  font-style: italic;
-}
-
-.osis .container .visiMisi .visi h3 {
-  font-size: 1.5rem;
-  font-weight: 300;
-  letter-spacing: 2px;
-}
-
-.osis .container .visiMisi .misi h5 {
-  font-size: 1.2rem;
-  font-style: italic;
-}
-
-.container .visiMisi .misi p {
-  font-size: 1.2rem;
-  font-family: "PT Serif", sans-serif;
-}
-
 .titleArtikel {
   padding: 130px 0 20px 0;
 }
