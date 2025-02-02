@@ -12,6 +12,22 @@ body {
   position: relative;
 }
 
+/* navbar menyala */
+.navbar a {
+  text-decoration: none;
+  padding: 5px 15px;
+  display: flexbox;
+  color: black;
+  transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out;
+}
+
+.navbar a:hover {
+  background-color: green;
+  color: black;
+}
+
+/* sampe sini */
+
 .navbar {
   -webkit-box-align: center;
   -ms-flex-align: center;
@@ -125,8 +141,8 @@ body {
 
 .slideshow .container {
   position: absolute;
-  bottom: 150px;
-  left: 150px;
+  bottom: 10px;
+  left: 10px;
 }
 
 .slideshow .container .mainText {
@@ -320,7 +336,7 @@ body {
 }
 
 .artikel .perArtikel:hover h3 {
-  color: #0e85e7;
+  color: green;
   -webkit-transition: 0.5s;
   transition: 0.5s;
 }
@@ -460,7 +476,7 @@ body {
   color: #fff;
   width: 100%;
   height: 35px;
-  background-color: #0066ff;
+  background-color: green;
   font-size: 1rem;
   z-index: 2;
 }
@@ -505,7 +521,7 @@ body {
 }
 
 .containerArtikelHome .artikelHome .perArtikelHome:hover h3 {
-  color: #0e6ce7;
+  color: green;
   -webkit-transition: 0.3s;
   transition: 0.3s;
 }
@@ -529,7 +545,7 @@ body {
 }
 
 .containerArtikelHome .artikelHome .perArtikelHome small span {
-  color: #0e85e7;
+  color: green;
   font-weight: 700;
 }
 
@@ -647,7 +663,7 @@ body {
   -webkit-box-pack: center;
   -ms-flex-pack: center;
   justify-content: center;
-  background-color: #0069d9;
+  background-color: green;
   color: #fff;
   border-radius: 20px;
   -webkit-transform: translateY(50px);
@@ -740,7 +756,7 @@ body {
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
-  background-color: #0077b5;
+  background-color: green;
   margin: 0;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
@@ -1126,7 +1142,7 @@ iframe {
   }
   .iconBox .perIconBox {
     width: 300px;
-    border-bottom: 0px solid #0306aa;
+    border-bottom: 0px solid green;
     border-right: 0px solid #666666;
   }
   .pembinaEkstrakulikuler .perPembina {
