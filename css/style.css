@@ -22,14 +22,14 @@ body {
 }
 
 .navbar a:hover {
-  background-color: green;
+  background-color: rgba(0, 128, 0, 0.575);
   color: black;
 }
 
 /* sampe sini */
 
 .navbar {
-  -webkit-box-align: center;
+  -webkit-box-align: initial;
   -ms-flex-align: center;
   align-items: center;
   background-color: transparent;

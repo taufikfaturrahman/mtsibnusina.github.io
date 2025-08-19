@@ -67,10 +67,10 @@
   </head>
 
   <body>
-    <!-- <nav class="navbar navbar-expand-lg navbar-light navbarKu fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-light navbarHome fixed-top">
       <div class="container">
-        <a class="navbar-brand" href="#">
-          <img src="images/ibnusina.png" alt="Logo MTs ibnu sina" />
+        <a class="navbar-brand" href="index.html">
+          <img src="images/ibnusina.png" alt="Logo MTs Ibnu Sina" />
           <h1>MTs<br />IBNU SINA</h1>
         </a>
 
@@ -87,62 +87,105 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav mr-auto ml-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="index.html">Home</a>
-            </li>
-
-            <li class="nav-item active">
-              <a class="nav-link" href="https://forms.gle/CpwnLU6wPaTCQBz26"
-                >Pendaftaran</a
-              >
-            </li>
-
-            <li class="nav-item active">
-              <a class="nav-link" href="artikel.html">Artikel</a>
-            </li>
-
-            <li class="nav-item active">
-              <a class="nav-link" href="dataguru.html">Data Guru</a>
-            </li>
-
-            <li class="nav-item active">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
               <a
-                href="#"
                 class="nav-link dropdown-toggle"
-                id="dropdownMenuLink"
+                href="#"
+                id="profilDropdown"
                 role="button"
                 data-toggle="dropdown"
                 aria-haspopup="true"
                 aria-expanded="false"
               >
-                More
+                Profil Kami
               </a>
-
-              <div class="dropdown-menu" aria-labelledby="dropdownMenuOffset">
-                <a class="dropdown-item" href="ekstrakulikuler.html"
-                  >Ekstrakulikuler</a
-                >
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="galeri.html">Galeri</a>
+              <div class="dropdown-menu" aria-labelledby="profilDropdown">
+                <a class="dropdown-item" href="#">Profil Sekolah</a>
+                <a class="dropdown-item" href="#">Identitas Sekolah</a>
+                <a class="dropdown-item" href="#">Sejarah Singkat</a>
+                <a class="dropdown-item" href="#">Visi & Misi</a>
+                <a class="dropdown-item" href="#">Struktur Organisasi</a>
               </div>
             </li>
-          </ul>
-          <form class="form-inline my-2 my-lg-0">
-            <input
-              class="form-control sm-2"
-              type="search"
-              placeholder="Cari Artikel"
-              aria-label="Search"
-            />
 
-            <button class="btn btn-primary sm-0" type="submit">
-              <i class="fas fa-search"></i>
-            </button>
-          </form>
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="profilDropdown"
+                role="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                Unit Kerja
+              </a>
+              <div class="dropdown-menu" aria-labelledby="profilDropdown">
+                <a class="dropdown-item" href="#">Wakasek Kurikulum</a>
+                <a class="dropdown-item" href="#">Wakasek Kesiswaan</a>
+                <a class="dropdown-item" href="#">Wakasek Humas</a>
+                <a class="dropdown-item" href="#">Wakasek Sapras</a>
+                <a class="dropdown-item" href="#">Wali Kelas</a>
+              </div>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="dataguru.html">Data Guru</a>
+            </li>
+
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="rppDropdown"
+                role="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                RPP
+              </a>
+              <div class="dropdown-menu" aria-labelledby="rppDropdown">
+                <a class="dropdown-item" href="#">RPP Matematika</a>
+                <a
+                  class="dropdown-item"
+                  href="https://drive.google.com/drive/folders/17yCvaN1pw6QJMNG2qK11wM4MyIvbwHO9?usp=drive_link"
+                  >RPP INFORMATIKA</a
+                >
+                <a class="dropdown-item" href="#">RPP B. Sunda</a>
+                <a class="dropdown-item" href="#">RPP B. Inggris</a>
+                <a class="dropdown-item" href="#">RPP B. Indonesia</a>
+                <a class="dropdown-item" href="#">RPP Prakarya</a>
+                <a class="dropdown-item" href="#">RPP Pancasila</a>
+                <a class="dropdown-item" href="#">RPP B. Arab</a>
+                <a class="dropdown-item" href="#">RPP Qurdis</a>
+                <a class="dropdown-item" href="#">RPP Akidah</a>
+                <a class="dropdown-item" href="#">RPP IPS</a>
+                <a class="dropdown-item" href="#">RPP IPA</a>
+              </div>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="ekstrakulikuler.html"
+                >Ekstrakulikuler</a
+              >
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="https://rdm.kemenag.go.id/login/auth"
+                >RDM</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="https://forms.gle/CpwnLU6wPaTCQBz26"
+                >Pendaftaran</a
+              >
+            </li>
+          </ul>
         </div>
       </div>
-    </nav> -->
+    </nav>
 
     <div class="title">
       <h1 class="text-center">Ekstrakulikuler Kami</h1>
@@ -153,39 +196,11 @@
 
     <div class="container ekstrakulikuler">
       <a href="perEkstrakulikuler.html" class="perEkstrakulikuler">
-        <p>Sepak Bola</p>
+        <p>Pramuka</p>
       </a>
 
       <a href="perEkstrakulikuler.html" class="perEkstrakulikuler">
-        <p>Sepak Bola</p>
-      </a>
-
-      <a href="perEkstrakulikuler.html" class="perEkstrakulikuler">
-        <p>Sepak Bola</p>
-      </a>
-
-      <a href="perEkstrakulikuler.html" class="perEkstrakulikuler">
-        <p>Sepak Bola</p>
-      </a>
-
-      <a href="perEkstrakulikuler.html" class="perEkstrakulikuler">
-        <p>Sepak Bola</p>
-      </a>
-
-      <a href="perEkstrakulikuler.html" class="perEkstrakulikuler">
-        <p>Sepak Bola</p>
-      </a>
-
-      <a href="perEkstrakulikuler.html" class="perEkstrakulikuler">
-        <p>Sepak Bola</p>
-      </a>
-
-      <a href="perEkstrakulikuler.html" class="perEkstrakulikuler">
-        <p>Sepak Bola</p>
-      </a>
-
-      <a href="perEkstrakulikuler.html" class="perEkstrakulikuler">
-        <p>Sepak Bola</p>
+        <p>Bola Voli</p>
       </a>
     </div>
 
