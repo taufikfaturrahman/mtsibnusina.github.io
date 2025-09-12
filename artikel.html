@@ -1,303 +1,697 @@
+<?php
+require_once 'config/database.php';
+
+// Ambil data user (jika memang ada tabel admin, pakai admin; kalau tidak, pakai users)
+try {
+    $stmt = $pdo->prepare("SELECT * FROM admin LIMIT 1");
+    $stmt->execute();
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Debug (sementara, bisa dihapus nanti)
+    // print_r($data);
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}
+
+// Data statistik (sementara masih statis, bisa diganti query count() nanti)
+$stats = [
+    'total_Siswa/siswi' => 150,
+    'total_guru'        => 10,
+    'total_alumni'      => 218,
+    'berdiri'           => 'Tahun 2015'
+];
+
+// Data berita dummy (fallback jika query kosong)
+$news = [
+    ['title' => 'Pembukaan PPDB 2024/2025', 'date' => '1 Juni 2024', 'excerpt' => 'Pendaftaran peserta didik baru tahun ajaran 2024/2025 resmi dibuka.'],
+    ['title' => 'Jadwal Tes Seleksi', 'date' => '20 Juni 2025', 'excerpt' => 'Informasi jadwal tes seleksi masuk MTs Ibnu Sina.'],
+    ['title' => 'Syarat Pendaftaran', 'date' => '25 Mei 2025', 'excerpt' => 'Persyaratan lengkap untuk pendaftaran PPDB online.']
+];
+
+// Ambil 3 berita terbaru yang statusnya Published
+try {
+    $stmt = $pdo->prepare("SELECT * FROM berita WHERE status = 'Published' ORDER BY tanggal_publish DESC, created_at DESC LIMIT 3");
+    $stmt->execute();
+    $berita_terbaru = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $berita_terbaru = []; // jika tabel belum ada
+}
+?>
+
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=7">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="keywords" content="">
-    <meta name="description" content="">
-
-    <title>Artikel SMK N 2 Purbalingga</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="shortcut icon" href="images/logo.png" type="image/x-icon">
-
-    <!-- font awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" integrity="sha512-RXf+QSDCUQs5uwRKaDoXt55jygZZm2V++WUZduaU/Ui/9EGp3f/2KZVahFZBKGH0s774sd3HmrhUy+SgOFQLVQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <title>PPDB Online - MTs Ibnu Sina</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.0/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+    background: 
+        linear-gradient(135deg, rgba(50, 90, 24, 0.7) 0%, rgba(53, 122, 32, 0.7) 100%), 
+        url('assets/images/galeri.png');
+    background-size: cover;       /* supaya gambar full layar */
+    background-position: center;  /* biar gambar selalu ditengah */
+    background-repeat: no-repeat; /* supaya tidak ngulang */
 
 
-    <!-- boot -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+        .card-hover {
+            transition: all 0.3s ease;
+        }
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
 
-
-    <!-- lightslider -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightslider/1.1.6/css/lightslider.css" integrity="sha512-+1GzNJIJQ0SwHimHEEDQ0jbyQuglxEdmQmKsu8KI7QkMPAnyDrL9TAnVyLPEttcTxlnLVzaQgxv2FpLCLtli0A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightslider/1.1.6/js/lightslider.min.js" integrity="sha512-Gfrxsz93rxFuB7KSYlln3wFqBaXUc1jtt3dGCp+2jTb563qYvnUBM/GP2ZUtRC27STN/zUamFtVFAIsRFoT6/w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        /* Custom responsive styles untuk mempertahankan layout side by side */
+        @media (max-width: 640px) {
+            .hero-title {
+                font-size: 1.5rem; /* 24px */
+                line-height: 1.3;
+            }
+            .hero-subtitle {
+                font-size: 0.875rem; /* 14px */
+                line-height: 1.4;
+            }
+            .hero-button {
+                font-size: 0.75rem; /* 12px */
+                padding: 0.5rem 1rem; /* 8px 16px */
+            }
+            .hero-image {
+                max-width:10cm;
+                height: auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 1.25rem; /* 20px */
+            }
+            .hero-subtitle {
+                font-size: 0.75rem; /* 12px */
+            }
+            .hero-button {
+                font-size: 0.625rem; /* 10px */
+                padding: 0.4rem 0.8rem; /* 6px 12px */
+            }
+        }
+    </style>
 </head>
 
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light navbarKu fixed-top">
-        <div class="container">
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50" x-data="{ mobileMenu: false, profileDropdown: false }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img class="h-8 w-8" src="assets/images/logo.png" alt="Logo MTs">
+                        <span class="ml-2 text-xl font-bold text-gray-900">MTs Ibnu Sina</span>
+                    </div>
+                </div>
 
-            <a class="navbar-brand" href="#">
-                <img src="images/logo.png" alt="Logo SMK N 2 Purbalingga">
-                <h1>SMK Negeri 2<br>Purbalingga</h1>
-            </a>
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="text-gray-900 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Beranda</a>
 
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav mr-auto ml-auto">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="index.html">Home</a>
-                    </li>
-
-                    <li class="nav-item active">
-                        <a class="nav-link" href="galeri.html">Galeri</a>
-                    </li>
-                    <li class="nav-item active">
-                        <a class="nav-link" href="artikel.html">Artikel</a>
-                    </li>
-
-
-                    <li class="nav-item active">
-                        <a href="#" class="nav-link dropdown-toggle" id="dropdownMenuLink" role="button"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            More
-                        </a>
-
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuOffset">
-                            <a class="dropdown-item" href="ekstrakulikuler.html">Ekstrakulikuler</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="kontak.html">Contact Us</a>
+                    <!-- Dropdown Akademik -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="text-gray-900 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center">
+                            Akademik
+                            <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Kurikulum</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Jadwal Pelajaran</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Kalender Akademik</a>
                         </div>
-                    </li>
-                </ul>
-                <form class="form-inline my-2 my-lg-0">
+                    </div>
 
-                    <input class="form-control sm-2" type="search" placeholder="Cari Artikel" aria-label="Search">
+                    <!-- Dropdown Fasilitas -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="text-gray-900 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center">
+                            Profil
+                            <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5">
+                            <a href="dropdown/sejarah.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sejarah</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                visi-Misi
+                            </a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Struktur Organisasi</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"></a>
+                        </div>
+                    </div>
+                    
+                    <a href="#" class="text-gray-900 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Kontak</a>
 
-                    <button class="btn btn-primary sm-0" type="submit">
-                        <i class="fas fa-search"></i>
+                    <!-- Login Button -->
+                    <a href="login.php" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">Masuk</a>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button @click="mobileMenu = !mobileMenu" class="text-gray-500 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 p-2 rounded-md">
+                        <i class="fas fa-bars text-lg"></i>
                     </button>
-
-                </form>
+                </div>
             </div>
+        </div>
 
+        <!-- Mobile Menu -->
+        <div x-show="mobileMenu" x-transition class="md:hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
+                <a href="#" class="text-gray-900 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-medium">Beranda</a>
+                <a href="#" class="text-gray-900 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-medium">PPDB</a>
+                <a href="#" class="text-gray-900 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-medium">Akademik</a>
+                <a href="#" class="text-gray-900 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-medium">Fasilitas</a>
+                <a href="#berita/1.php" class="text-gray-900 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-medium">Berita</a>
+                <a href="#" class="text-gray-900 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-medium">Kontak</a>
+                <div class="border-t pt-4">
+                    <a href="#" class="bg-indigo-600 text-white block px-3 py-2 rounded-md text-base font-medium">Masuk</a>
+                </div>
+            </div>
         </div>
     </nav>
 
-    <div class="container titleArtikel">
-        <!-- <h1>Latest Post</h1> -->
-        <h1>Postingan Terbaru</h1>
-    </div>
-
-    <div class="container artikel">
-
-        <a href="perArtikel.html" class="text-decoration-none">
-            <div class="perArtikel">
-                <img src="images/5e72f72cca561-respect-desktop2.jpg" alt="Artikel">
-                <div class="textArtikel">
-                    <h3>Cara Membuat Website</h3>
-                    <p>
-                        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Excepturi eaque officiis dignissimos
-                        temporibus reprehenderit distinctio. Ipsam laudantium explicabo sed ratione nisi officiis
-                        eveniet! Repellat architecto eos aut, ipsum laborum ratione?
+    <!-- Hero Section - Fixed Layout untuk Mobile -->
+    <section class="gradient-bg py-4 sm:py-6 lg:py-0 min-h-[100px] sm:min-h-[500px] lg:min-h-[530px] flex items-center">
+        <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 w-full">
+            <!-- Selalu gunakan flex row, tidak pernah column -->
+            <div class="flex flex-row items-center gap-2 sm:gap-4 lg:gap-8 h-full">
+                <!-- Text Content - Selalu di kiri -->
+                <div class="w-1/2 text-white pr-2 sm:pr-4">
+                    <h1 class="hero-title font-bold mb-2 sm:mb-4 text-2xl sm:text-3xl md:text-4xl lg:text-6xl leading-tight">
+                        Ppdb Online<br>
+                        <span class="text-yellow-300">MTs Ibnu Sina</span>
+                    </h1>
+                    <p class="hero-subtitle mb-3 sm:mb-6 opacity-90 text-sm sm:text-base lg:text-xl">
+                        Bergabunglah dengan MTs Ibnu Sina dan raih masa depan cemerlang dengan pendidikan berkualitas.
                     </p>
-                </div>
-            </div>
-        </a>
-
-        <a href="perArtikel.html" class="text-decoration-none">
-            <div class="perArtikel">
-                <img src="images/5e72f72cca561-respect-desktop2.jpg" alt="Artikel">
-                <div class="textArtikel">
-                    <h3>Cara Membuat Website</h3>
-                    <p>
-                        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Excepturi eaque officiis dignissimos
-                        temporibus reprehenderit distinctio. Ipsam laudantium explicabo sed ratione nisi officiis
-                        eveniet! Repellat architecto eos aut, ipsum laborum ratione?
-                    </p>
-                </div>
-            </div>
-        </a>
-
-        <a href="perArtikel.html" class="text-decoration-none">
-            <div class="perArtikel">
-                <img src="images/5e72f72cca561-respect-desktop2.jpg" alt="Artikel">
-                <div class="textArtikel">
-                    <h3>Cara Membuat Website</h3>
-                    <p>
-                        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Excepturi eaque officiis dignissimos
-                        temporibus reprehenderit distinctio. Ipsam laudantium explicabo sed ratione nisi officiis
-                        eveniet! Repellat architecto eos aut, ipsum laborum ratione?
-                    </p>
-                </div>
-            </div>
-        </a>
-
-        <a href="perArtikel.html" class="text-decoration-none">
-            <div class="perArtikel">
-                <img src="images/5e72f72cca561-respect-desktop2.jpg" alt="Artikel">
-                <div class="textArtikel">
-                    <h3>Cara Membuat Website</h3>
-                    <p>
-                        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Excepturi eaque officiis dignissimos
-                        temporibus reprehenderit distinctio. Ipsam laudantium explicabo sed ratione nisi officiis
-                        eveniet! Repellat architecto eos aut, ipsum laborum ratione?
-                    </p>
-                </div>
-            </div>
-        </a>
-
-        <a href="perArtikel.html" class="text-decoration-none">
-            <div class="perArtikel">
-                <img src="images/5e72f72cca561-respect-desktop2.jpg" alt="Artikel">
-                <div class="textArtikel">
-                    <h3>Cara Membuat Website</h3>
-                    <p>
-                        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Excepturi eaque officiis dignissimos
-                        temporibus reprehenderit distinctio. Ipsam laudantium explicabo sed ratione nisi officiis
-                        eveniet! Repellat architecto eos aut, ipsum laborum ratione?
-                    </p>
-                </div>
-            </div>
-        </a>
-
-        <a href="perArtikel.html" class="text-decoration-none">
-            <div class="perArtikel">
-                <img src="images/5e72f72cca561-respect-desktop2.jpg" alt="Artikel">
-                <div class="textArtikel">
-                    <h3>Cara Membuat Website</h3>
-                    <p>
-                        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Excepturi eaque officiis dignissimos
-                        temporibus reprehenderit distinctio. Ipsam laudantium explicabo sed ratione nisi officiis
-                        eveniet! Repellat architecto eos aut, ipsum laborum ratione?
-                    </p>
-                </div>
-            </div>
-        </a>
-    </div>
-
-    <!-- 
-    <div class="container artikelPagination">
-        <i class="fas fa-angle-left"></i>
-        <span>1</span>
-        <span>2</span>
-        <span>3</span>
-        <span>4</span>
-        <span>5</span>
-        <i class="fas fa-angle-right"></i>
-    </div> -->
-
-
-
-
-    <!-- sosmed icon -->
-    <div class="iconBox">
-        <a href="" class="perIconBox wa">
-            <i class="fab fa-whatsapp"></i>
-        </a>
-
-        <a href="" class="perIconBox fb">
-            <i class="fab fa-facebook-f"></i>
-        </a>
-
-        <a href="" class="perIconBox ig">
-            <i class="fab fa-instagram"></i>
-        </a>
-
-        <a href="" class="perIconBox yt">
-            <i class="fab fa-youtube"></i>
-        </a>
-
-        <a href="" class="perIconBox linkin">
-            <i class="fab fa-linkedin-in"></i>
-        </a>
-    </div>
-
-    <div class="footer">
-
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h4 class="my-4 text-white text-center">Contact Us</h4>
-
-                    <div class="footerContactUs">
-
-                        <div class="perFooterContactUs">
-                            <i class="fas text-white fa-envelope"></i>
-                            <p class="text-white">official@smkn2purbalingga.com</p>
-                        </div>
-
-                        <div class="perFooterContactUs">
-                            <i class="fas text-white fa-phone-alt"></i>
-                            <p class="text-white">023423434234</p>
-                        </div>
-
-                        <div class="perFooterContactUs">
-                            <i class="fas text-white fa-road"></i>
-                            <p class="text-white">Jl. Raya Selaganggeng, Kec. Mrebet - Kab. Purbalingga</p>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-
-
-
-
-                <div class="col-md-4">
-                    <h4 class="my-4 text-center text-white">About</h4>
-                    <div class="footerAbout">
-                        <a href="" class="text-white">Artikel</a>
-                        <a href="" class="text-white">Galeri</a>
-                        <a href="" class="text-white">Contact Us</a>
-                        <a href="" class="text-white">Ekstrakulikuler</a>
+                    <div class="space-y-2 sm:space-y-3 lg:space-y-0 lg:space-x-4 lg:flex">
+                        <button class="hero-button w-full sm:w-full lg:w-auto bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold rounded-lg transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-edit mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+                            <span class="text-xs sm:text-sm lg:text-base">Daftar Sekarang</span>
+                        </button>
+                        <button class="hero-button w-full sm:w-full lg:w-auto border-2 border-white text-white hover:bg-white hover:text-gray-900 font-semibold rounded-lg transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-search mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+                            <span class="text-xs sm:text-sm lg:text-base">Cek Status</span>
+                        </button>
                     </div>
                 </div>
-
-
-                <div class="col-md-4 text-center">
-                    <h4 class="my-4 text-white">Newsletter</h4>
-                    <form>
-
-                        <div class="form-group">
-                            <input class="form-control" type="search" placeholder="Example@gmail.com"
-                                aria-label="Search">
-                            <button class="btn btn-primary btn-newsletter" type="submit">Kirim</button>
-                        </div>
-
-                    </form>
+                
+                <!-- Image - Selalu di kanan -->
+                <div class="w-1/2 flex justify-center items-center">
+                    <img src="assets/images/posterrr.png" alt="Students" class="hero-image rounded-lg w-full h-auto object-contain max-h-[250px] sm:max-h-[250px] lg:max-h-[500px]">
                 </div>
             </div>
         </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-8 lg:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-indigo-600 rounded-2xl p-6 lg:p-8 text-white">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+                    <div class="text-center">
+                        <div class="text-2xl lg:text-4xl font-bold"><?php echo number_format($stats['total_Siswa/siswi']); ?></div>
+                        <div class="text-sm lg:text-base opacity-90">Total Siswa/siswi</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl lg:text-4xl font-bold"><?php echo number_format($stats['total_guru']); ?></div>
+                        <div class="text-sm lg:text-base opacity-90">Total_guru</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl lg:text-4xl font-bold"><?php echo number_format($stats['total_alumni']); ?></div>
+                        <div class="text-sm lg:text-base opacity-90">Total_alumni</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xl lg:text-2xl font-bold"><?php echo $stats['berdiri']; ?></div>
+                        <div class="text-sm lg:text-base opacity-90">Berdiri Sejak</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Access -->
+    <section class="py-8 lg:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-8 text-center">Akses Cepat</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover text-center">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user-plus text-blue-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Pendaftaran Online</h3>
+                    <p class="text-gray-600 text-sm">Daftar sebagai calon siswa baru dengan mudah</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-clipboard-check text-green-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Cek Status</h3>
+                    <p class="text-gray-600 text-sm">Pantau status pendaftaran dan seleksi</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover text-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-calendar-alt text-purple-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Jadwal Seleksi</h3>
+                    <p class="text-gray-600 text-sm">Lihat jadwal tes dan wawancara</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover text-center">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-bullhorn text-yellow-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Pengumuman</h3>
+                    <p class="text-gray-600 text-sm">Info terbaru dan pengumuman penting</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- Section Video Profil -->
+<section class="py-16 bg-gray-100">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-10">
+      <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
+        Video Profil MTs Ibnu Sina
+      </h2>
+      <p class="text-gray-600 max-w-2xl mx-auto">
+        Saksikan sekilas tentang kegiatan dan suasana belajar di MTs Ibnu Sina.
+      </p>
     </div>
 
-
-
-
-
-
-
-
-
-
-
-
-    <div class="footerCopyright">
-        <p class="text-white">
-            <i class="far fa-copyright"></i>2021 By : <span>Rifki Romadhan</span>.&nbsp; Inspired by <a
-                href="https://www.acsjakarta.sch.id/">ACS
-                Jakarta</a>
-        </p>
+    <!-- Video Container -->
+    <div class="rounded-2xl overflow-hidden shadow-2xl max-w-4xl mx-auto">
+      <video controls autoplay muted loop class="w-full h-auto">
+        <source src="assets/images/singkat.mp4" type="video/mp4">
+        Browser Anda tidak mendukung video ini.
+      </video>
     </div>
+  </div>
+</section>
 
+
+    <!-- Sambutan Kepala Sekolah -->
+    <section class="py-8 lg:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="flex flex-col lg:flex-row items-center">
+                    <div class="lg:w-1/3 p-6 lg:p-8">
+                        <img src="assets/images/dede.jpg" alt="Kepala Sekolah" class="w-full rounded-lg shadow-md">
+                    </div>
+                    <div class="lg:w-2/3 p-6 lg:p-8">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">Sambutan Kepala Madrasah</h2>
+                        <h3 class="text-lg text-indigo-600 font-semibold mb-4">Dede Muhamad S, S.Pd.I</h3>
+                        <p class="text-gray-600 mb-4 leading-relaxed">
+                            Assalamu'alaikum Warahmatullahi Wabarakatuh. Selamat datang di MTs Ibnu Sina.
+                            Kami berkomitmen untuk memberikan pendidikan terbaik yang memadukan kurikulum nasional
+                            dengan nilai-nilai keislaman yang kuat.
+                        </p>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            Dengan fasilitas modern dan tenaga pengajar yang kompeten, kami siap membentuk generasi
+                            yang berakhlak mulia, berprestasi, dan siap menghadapi tantangan masa depan.
+                        </p>
+                        <a href="#" class="inline-flex items-center text-indigo-600 hover:text-indigo-700 font-medium">
+                            Baca Sambutan Lengkap <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="berita-terbaru">
+        <div class="container">
+            <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-8 text-center">Berita Terbaru</h2>
+            <div class="berita-list">
+                <?php foreach ($berita_terbaru as $berita): ?>
+                    <article class="berita-item">
+                        <?php if ($berita['gambar']): ?>
+                            <div class="berita-thumb">
+                                <a href="berita.php?id=<?= $berita['id'] ?>">
+                                    <img src="uploads/berita/<?= $berita['gambar'] ?>"
+                                        alt="<?= htmlspecialchars($berita['judul']) ?>"
+                                        loading="lazy">
+                                </a>
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="berita-content">
+                            <h3>
+                                <a href="berita.php?id=<?= $berita['id'] ?>">
+                                    <?= htmlspecialchars($berita['judul']) ?>
+                                </a>
+                            </h3>
+                            <p class="berita-date">
+                                <i class="fas fa-calendar"></i>
+                                <?= date('d M Y', strtotime($berita['tanggal_publish'] ?: $berita['created_at'])) ?>
+                            </p>
+                            <p class="berita-excerpt">
+                                <?= substr(strip_tags($berita['konten']), 0, 100) ?>...
+                            </p>
+                            <a href="berita.php?id=<?= $berita['id'] ?>" class="btn btn-primary">Baca Selengkapnya</a>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        .berita-terbaru {
+            padding: 40px 0;
+            background: #f8f9fa;
+        }
+
+        .berita-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .berita-item {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .berita-thumb img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .berita-content {
+            padding: 15px;
+            flex: 1;
+        }
+
+        .berita-content h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .berita-content h3 a {
+            color: #333;
+            text-decoration: none;
+        }
+
+        .berita-content h3 a:hover {
+            color: #4CAF50;
+        }
+
+        .berita-date {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .berita-excerpt {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+        }
+
+       
+    </style>
+
+    <!-- Section Data Guru -->
+    <section class="py-12 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-6 text-gray-900">Data Guru MTs Ibnu Sina</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
+                Berikut adalah para guru hebat yang mendidik di MTs Ibnu Sina dengan dedikasi tinggi untuk mencerdaskan generasi bangsa.
+            </p>
+
+            <!-- Horizontal Scroll Container -->
+            <div class="overflow-x-auto">
+                <div class="flex space-x-6 pb-4 min-w-max">
+                    
+                    <!-- Teacher Card 1 -->
+                    <div class="flex-none w-60 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                        <div class="relative">
+                            <img src="assets/images/opik.jpg" 
+                                 alt="Taufik Faturrohman S.Kom" 
+                                 class="w-full h-72 object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-1">Taufik Faturrohman S.Kom</h3>
+                            <p class="text-sm text-green-600 font-medium mb-2">Informatika</p>
+                            <p class="text-xs text-gray-500">Guru Tetap sejak 2023</p>
+                        </div>
+                    </div>
+
+                    <!-- Teacher Card 2 -->
+                    <div class="flex-none w-60 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                        <div class="relative">
+                            <img src="https://via.placeholder.com/240x288?text=Guru+2" 
+                                 alt="Maman S.Kom" 
+                                 class="w-full h-72 object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-1">Maman S.Kom</h3>
+                            <p class="text-sm text-green-600 font-medium mb-2">Matematika</p>
+                            <p class="text-xs text-gray-500">Guru Tetap sejak 2019</p>
+                        </div>
+                    </div>
+
+                    <!-- Teacher Card 3 -->
+                    <div class="flex-none w-60 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                        <div class="relative">
+                            <img src="https://via.placeholder.com/240x288?text=Guru+3" 
+                                 alt="Ooy Sudrajat S.Pd" 
+                                 class="w-full h-72 object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-1">Ooy Sudrajat S.Pd</h3>
+                            <p class="text-sm text-green-600 font-medium mb-2">IPA Terpadu</p>
+                            <p class="text-xs text-gray-500">Guru Tetap sejak 2020</p>
+                        </div>
+                    </div>
+
+                    <!-- Teacher Card 4 -->
+                    <div class="flex-none w-60 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                        <div class="relative">
+                            <img src="" 
+                                 alt="Iwan Nawawi S.Pd" 
+                                 class="w-full h-72 object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-1">Iwan Nawawi S.Pd</h3>
+                            <p class="text-sm text-green-600 font-medium mb-2">Bahasa Indonesia</p>
+                            <p class="text-xs text-gray-500">Guru Tetap sejak 2019</p>
+                        </div>
+                    </div>
+
+                    <!-- Teacher Card 5 -->
+                    <div class="flex-none w-60 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                        <div class="relative">
+                            <img src="https://via.placeholder.com/240x288?text=Guru+5" 
+                                 alt="Iwan Nawawi S.Pd" 
+                                 class="w-full h-72 object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-1">Iwan Nawawi S.Pd</h3>
+                            <p class="text-sm text-green-600 font-medium mb-2">Pendidikan Jasmani</p>
+                            <p class="text-xs text-gray-500">Guru Tetap sejak 2019</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Navigation Hint -->
+            <div class="text-center mt-6">
+                <p class="text-sm text-gray-500">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Geser ke kanan untuk melihat guru lainnya
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </p>
+            </div>
+        </div>
+    </section>
+<style>
+     .overflow-x-auto::-webkit-scrollbar {
+            height: 6px;
+        }
+        .overflow-x-auto::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .overflow-x-auto::-webkit-scrollbar-thumb {
+            background: #16a34a;
+            border-radius: 10px;
+        }
+        .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+            background: #15803d;
+        }
+</style>
+
+    <!-- Testimonials -->
+    <section class="py-8 lg:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-8 text-center">Apa Kata Mereka</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <img src="assets/images/poto6.jpg" alt="Alumni" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Ujang adi dkk</h4>
+                            <p class="text-gray-600 text-sm">Alumni 2024</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm italic">"MTs Ibnu Sina memberikan pendidikan yang sangat berkualitas."</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <img src="https://via.placeholder.com/50x50/F59E0B/white?text=S" alt="Siswa" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Siti Nurhaliza</h4>
+                            <p class="text-gray-600 text-sm">Siswa Kelas 9</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm italic">"Guru-guru di sini sangat ramah dan selalu membantu siswa dalam belajar."</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <img src="https://via.placeholder.com/50x50/EF4444/white?text=B" alt="Orang Tua" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Budi Santoso</h4>
+                            <p class="text-gray-600 text-sm">Orang Tua Siswa</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm italic">"Saya sangat puas dengan perkembangan anak saya selama bersekolah di MTs Ibnu Sina."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Lokasi & Hubungi Kami -->
+<section class="py-16 bg-gradient-to-r from-green-50 via-white to-green-50">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden">
+      
+      <!-- Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2">
+        
+        <!-- Maps -->
+        <div class="h-80 md:h-full">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3954.027293265858!2d108.18071007508907!3d-7.680214376031942!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e65e72d21e639e5%3A0x639010df69ceda71!2sMI%20Cisasah!5e0!3m2!1sid!2sid!4v1755157864525!5m2!1sid!2sid"
+            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+
+        <!-- Kontak -->
+        <div class="flex flex-col justify-center items-center p-10 bg-gradient-to-br from-green-600 to-green-700 text-white">
+          <h2 class="text-3xl font-bold mb-4">Hubungi Kami</h2>
+          <p class="text-center mb-6 text-lg opacity-90">
+            Punya pertanyaan? Klik tombol di bawah untuk langsung chat via WhatsApp.
+          </p>
+          <a href="https://wa.me/6281234567890" target="_blank"
+             class="flex items-center gap-2 bg-white text-green-700 hover:bg-gray-100 font-semibold px-6 py-3 rounded-xl shadow-lg transform hover:scale-105 transition duration-300">
+            <!-- Icon WA -->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6">
+              <path d="M12 .5C5.648.5.5 5.648.5 12c0 2.114.554 4.097 1.515 5.81L.5 23.5l5.863-1.487A11.44 11.44 0 0 0 12 23.5c6.352 0 11.5-5.148 11.5-11.5S18.352.5 12 .5zm0 21c-1.84 0-3.562-.497-5.053-1.36l-.362-.213-3.48.882.928-3.395-.236-.375A9.47 9.47 0 0 1 2.5 12c0-5.238 4.262-9.5 9.5-9.5s9.5 4.262 9.5 9.5-4.262 9.5-9.5 9.5zm5.36-7.14c-.293-.147-1.734-.856-2.003-.952s-.465-.147-.66.147-.758.952-.929 1.147c-.17.195-.341.22-.634.073s-1.238-.456-2.36-1.453c-.873-.777-1.463-1.734-1.634-2.028-.17-.293-.018-.451.128-.598.131-.13.293-.341.439-.512.146-.17.195-.293.293-.488.098-.195.049-.366-.024-.512s-.66-1.587-.902-2.169c-.237-.57-.478-.492-.66-.5-.17-.007-.366-.009-.561-.009s-.512.073-.78.366c-.268.293-1.024 1-1.024 2.439s1.048 2.834 1.195 3.029c.146.195 2.062 3.155 5.003 4.421.7.302 1.245.483 1.67.618.701.223 1.34.192 1.845.117.563-.084 1.734-.708 1.979-1.392.244-.683.244-1.269.171-1.392-.073-.122-.268-.195-.561-.341z"/>
+            </svg>
+            Chat WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 lg:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <img class="h-8 w-8" src="https://via.placeholder.com/32x32/4F46E5/white?text=M" alt="Logo">
+                        <span class="ml-2 text-xl font-bold">MTs Ibnu Sina</span>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-4">
+                        Madrasah Tsanawiyah yang berkomitmen memberikan pendidikan berkualitas dengan nilai-nilai islami.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">PPDB</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Pendaftaran Online</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Syarat Pendaftaran</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Jadwal Seleksi</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Pengumuman</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Akademik</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Kurikulum</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Jadwal Pelajaran</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Kalender Akademik</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Ekstrakurikuler</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Kontak</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><i class="fas fa-map-marker-alt mr-2"></i>Jl. Pendidikan No. 123, Jakarta</li>
+                        <li><i class="fas fa-phone mr-2"></i>(021) 123-4567</li>
+                        <li><i class="fas fa-envelope mr-2"></i>info@mtsibusina.sch.id</li>
+                        <li><i class="fas fa-globe mr-2"></i>www.mtsibusina.sch.id</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p>&copy; 2024 MTs Ibnu Sina. Semua hak cipta dilindungi.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>
